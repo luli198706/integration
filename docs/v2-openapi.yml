@@ -1,0 +1,129 @@
+openapi: 3.0.0
+info:
+  title: Integration Gateway API
+  version: 2.0.0
+  description: V2 API with additive changes - Fully backward compatible with V1
+
+servers:
+  - url: http://localhost:8080/v2
+    description: V2 API endpoint
+  - url: http://localhost:8080/v1
+    description: V1 API endpoint (still supported)
+
+paths:
+  # V2 ENDPOINTS (NEW - additive)
+  /products:
+    get:
+      summary: Get all products with enhanced metadata (V2)
+      tags: [Products]
+      responses:
+        '200':
+          description: Products with additional V2 metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductV2'
+  
+  /products/{id}:
+    get:
+      summary: Get product with enhanced metadata (V2)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details with V2 enhancements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductV2'
+
+  # V1 ENDPOINTS (STILL AVAILABLE - backward compatibility)
+  /v1/products:
+    get:
+      summary: Get all products (V1 - maintained for backward compatibility)
+      tags: [Products]
+      responses:
+        '200':
+          description: V1 format response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductV1'
+
+components:
+  schemas:
+    # V1 SCHEMA (unchanged - backward compatibility)
+    ProductV1:
+      $ref: './v1-openapi.yaml#/components/schemas/ProductV1'
+    
+    # V2 SCHEMA (extends V1 - additive changes)
+    ProductV2:
+      allOf:
+        - $ref: '#/components/schemas/ProductV1'  # ← ALL V1 fields included
+        - type: object
+          description: V2 additive enhancements
+          properties:
+            metadata:
+              type: object
+              properties:
+                createdAt:
+                  type: string
+                  format: date-time
+                  example: "2023-01-01T10:00:00Z"
+                updatedAt:
+                  type: string
+                  format: date-time
+                  example: "2023-01-02T15:30:00Z"
+                version:
+                  type: string
+                  example: "v2"
+            links:
+              type: object
+              properties:
+                self:
+                  type: string
+                  format: uri
+                  example: "/v2/products/prod_123"
+                stock:
+                  type: string
+                  format: uri
+                  example: "/warehouse/stock/prod_123"
+                erp:
+                  type: string
+                  format: uri
+                  example: "/erp/products/prod_123"
+            availability:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [in_stock, out_of_stock, low_stock, discontinued]
+                  example: "in_stock"
+                estimatedRestock:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2023-01-10T00:00:00Z"
+                lowStockThreshold:
+                  type: integer
+                  example: 5
+            # Additional optional fields
+            tags:
+              type: array
+              items:
+                type: string
+              example: ["featured", "new-arrival"]
+            rating:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 5
+              example: 4.5

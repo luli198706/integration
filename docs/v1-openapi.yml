@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: Integration Gateway API
+  version: 1.0.0
+  description: Stable V1 API - Do not break existing clients
+
+servers:
+  - url: http://localhost:8080/v1
+    description: V1 API endpoint
+
+paths:
+  /products:
+    get:
+      summary: Get all products with stock
+      tags: [Products]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductV1'
+  
+  /products/{id}:
+    get:
+      summary: Get product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductV1'
+
+components:
+  schemas:
+    ProductV1:
+      type: object
+      required: [id, name, price, stock, inStock]
+      properties:
+        id:
+          type: string
+          example: "prod_123"
+        name:
+          type: string
+          example: "Wireless Keyboard"
+        description:
+          type: string
+          example: "Ergonomic wireless keyboard"
+        price:
+          type: number
+          format: float
+          example: 79.99
+        category:
+          type: string
+          example: "electronics"
+        stock:
+          type: integer
+          example: 15
+        inStock:
+          type: boolean
+          example: true
+        stockLocation:
+          type: string
+          example: "warehouse-a"
+        stockLastUpdated:
+          type: string
+          format: date-time
+          example: "2023-01-01T12:00:00Z"
